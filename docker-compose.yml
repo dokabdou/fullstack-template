@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    restart: unless-stopped
+    volumes:
+      - ./db-data:/data/db
+    networks:
+      - internal-app-network
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/clientdb
+    networks:
+      - internal-app-network
+      - proxy-network
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
+  internal-app-network:
+    driver: bridge
