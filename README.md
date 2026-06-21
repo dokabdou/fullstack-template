@@ -11,7 +11,7 @@ Use this repository as a template to bootstrap new projects quickly – just clo
 | Layer      | Technology                         |
 |------------|------------------------------------|
 | Frontend   | Angular (latest)                   |
-| Backend    | Java 17+, Spring Boot 3.x          |
+| Backend    | Java 25+, Spring Boot 3.x          |
 | Security   | Spring Security (Basic Auth)       |
 | Databases  | MongoDB + H2 (JPA) – easily swap to PostgreSQL/MySQL |
 | Build Tool | Maven                              |
@@ -23,7 +23,7 @@ Use this repository as a template to bootstrap new projects quickly – just clo
 
 Make sure you have these installed on your machine:
 
-- **Java 17+**  
+- **Java 25+**  
 - **Node.js 18+** and npm  
 - **Angular CLI** (`npm install -g @angular/cli`)  
 - **MongoDB** (community edition – only if you actually use MongoDB)  
