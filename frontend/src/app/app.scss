@@ -1,0 +1,76 @@
+.scroll-to-top-btn {
+  position: fixed;
+  width: 48px;
+  height: 48px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: grab;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition:
+    background-color var(--transition),
+    transform var(--transition);
+  user-select: none;
+  touch-action: none;
+}
+
+.scroll-to-top-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-3px);
+}
+
+.scroll-to-top-btn.dragging {
+  cursor: grabbing;
+  transition: none;
+  transform: none;
+  opacity: 0.9;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+input:checked + .slider {
+  background: #4caf50;
+}
+
+input:checked + .slider::before {
+  transform: translateX(22px);
+}

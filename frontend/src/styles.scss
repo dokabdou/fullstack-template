@@ -1,0 +1,31 @@
+:root {
+  --primary: #dc0d0d;
+  --primary-hover: #1118e3;
+  --text: #0b1e33;
+  --text-secondary: #5f6b7a;
+  --text-light: #64748b;
+  --bg-form: #ffffff;
+  --bg-page: #f8fafc;
+  --border: #e2e8f0;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+  --gradient-bg: linear-gradient(
+    82deg,
+    rgba(2, 0, 36, 1) 0%,
+    rgba(9, 9, 121, 0.74) 51%,
+    rgba(0, 212, 255, 1) 100%
+  );
+
+  --success: #2e7d32;
+  --error: #c62828;
+
+  --transition: 0.25s ease;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden; // prevent any page‑level scrollbar
+}

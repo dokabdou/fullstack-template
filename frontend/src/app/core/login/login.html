@@ -1,0 +1,66 @@
+<main class="login-page">
+  <section class="login-left">
+    <img
+      class="logo"
+      src="assets/logos/_black_screen.jpg"
+      alt="BLACK Logo"
+      role="button"
+      tabindex="0"
+    />
+    <header class="form-container">
+      <h1 id="login-title" class="title-message">Connectez-vous</h1>
+      <p class="subtitle">Renseignez vos identifiants</p>
+
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm" aria-labelledby="login-title">
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            placeholder="Entrez votre adresse mail"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Mot de passe</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            placeholder="Entrez votre mot de passe"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+
+        <div class="options">
+          <label class="remember">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="remember" /> Se souvenir de moi
+          </label>
+          <a href="#" class="forgot">Mot de passe oublié ?</a>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          @if (!isLoading) {
+            Se connecter
+          } @else {
+            Connexion en cours…
+          }
+        </button>
+      </form>
+	  <p class="register-link">
+        Pas encore de compte ?
+        <a routerLink="/register">S'inscrire</a>
+      </p>
+    </header>
+  </section>
+</main>

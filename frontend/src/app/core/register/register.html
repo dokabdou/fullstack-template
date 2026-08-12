@@ -1,0 +1,53 @@
+<main class="register-page">
+  <section class="register-form-side">
+    <img
+      class="logo"
+      src="assets/logos/_black_screen.jpg"
+      alt="BLACK Logo"
+      routerLink="/login"
+      role="button"
+      tabindex="0"
+    />
+    <h1>Create an Account</h1>
+    <p class="subtitle">CREATE AN ACCOUNT</p>
+
+    <form (ngSubmit)="onSubmit()" #form="ngForm">
+      <label for="firstname">FirstName</label>
+      <input id="firstname" name="firstname" [(ngModel)]="firstname" required />
+
+      <label for="lastname">LastName</label>
+      <input id="lastname" name="lastname" [(ngModel)]="lastname" required />
+
+      <label for="birthdate">Birthday</label>
+      <input type="date" id="birthdate" name="birthdate" [(ngModel)]="birthdate" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" [(ngModel)]="email" required />
+
+      <label for="password">Passworrd</label>
+      <input type="password" id="password" name="password" [(ngModel)]="password" required />
+
+      <!-- 🆕 Confirmation field -->
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        [(ngModel)]="confirmPassword"
+        required
+      />
+
+      @if (errorMessage) {
+        <p class="error-message">{{ errorMessage }}</p>
+      }
+
+      <button type="submit" [disabled]="isLoading">
+        @if (!isLoading) { S'inscrire } @else { Signing Up }
+      </button>
+    </form>
+
+    <p class="login-link">
+      Already have an account ? <a routerLink="/login">Log in</a>
+    </p>
+  </section>
+</main>

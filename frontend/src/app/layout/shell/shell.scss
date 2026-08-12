@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  height: 100vh; 
+  align-items: stretch;
+}
+
+main {
+  flex: 1; // takes all leftover width after the sidebar
+  min-width: 0; // allow it to shrink
+  overflow: auto; // allow scrolling inside the content area
+}
