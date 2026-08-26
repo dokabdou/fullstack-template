@@ -168,3 +168,39 @@ fullstack-template/
 ├── .env.example         # Environment variables
 └── README.md
 ```
+
+## URL SET UP WITH NGINX AND Cloudflare
+
+### Adding a new secure reverse proxy
+On the local machine (with tailscale active) terminal :
+```bash
+ssh connect : ssh -L 81:10.10.10.7:81 root@192.168.1.55
+
+-- ---- -----
+10.10.10.7:81 => login in browser
+doctorabdou235@keemail.me //password in notes
+```
+
+Proxy Host set up - on website::
+
+- Click the Add Proxy Host button on the right.
+- Fill out the Details tab exactly like this:
+- Domain Names: Enter a domain name : NEWAPP.abdoudiallo.fr
+- Scheme: http
+- Forward Hostname / IP: 10.10.10.13 ==> the destination is going to be http://10.10.10.13:4200
+- Forward Port: 4200
+- toggle options then save
+==> for future webapps just add a proxy host
+
+### Adding url to Cloudflare 
+
+Add the Subdomain to Cloudflare Zero Trust:
+- Go to Cloudflare -> Zero Trust -> Networks -> Tunnels.
+- Click on existing `Proxmox-Server` tunnel and hit EDIT.
+- add route then Add published application
+- add the subdomain name : NEWAPP
+- Domain: abdoudiallo.fr
+- **Service:** `HTTP` -> `10.10.10.7:80` :: “http://10.10.10.7:80”
+    - *(Crucial: Always point the tunnel to the Nginx Proxy Manager IP, NOT the new app's IP!)*
+
+AFTER ALL THIS THE APP IS NOW ACCESSIBLE ON : [NEWAPP.abdoudiallo.fr](https://NEWAPP.abdoudiallo.fr/)
