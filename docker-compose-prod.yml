@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pg-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal-app-network
+
+  backend:
+    image: boycott-list-backend:latest
+    restart: unless-stopped
+    container_name: backend_boycott_list
+    ports:
+      - "8080:8080"
+    volumes:
+    - ./backups:/backups 
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+        - SPRING_PROFILES_ACTIVE=dev
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME}
+        - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+        - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+        - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+        - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+    networks:
+      - internal-app-network
+      - proxy-network
+
+  frontend:
+    image: boycott-list-frontend:latest
+    restart: unless-stopped
+    container_name: frontend_boycott_list
+    ports:
+      - "4200:4200"
+    networks:
+      - proxy-network
+      - internal-app-network
+
+networks:
+  proxy-network:
+    external: true
+  internal-app-network:
+    driver: bridge
+
+volumes:
+  pg-data:

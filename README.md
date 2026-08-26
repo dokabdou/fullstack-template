@@ -1,21 +1,30 @@
-# FULLSTACK TEMPLATE 
+# FULLSTACK TEMPLATE
 
-A FAIRE DESCRIPTION 
+TO DO DESCRIPTION
 
 
 
-# Créer le .env pour le docker-compose
+Generate QR CODE in linux terminal or cmdr : 
+```
+curl -o PROJECT_NAME.png "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2F{PROJECT}.abdoudiallo.fr%2F"
+```
 
-Copier le fichier example et générer un token JWT secret(à ne pas partager!!!), dans le terminal.
+
+# Fill in the auto_deploy file for easier file transfers to proxmox
+The info to fill in is the container id and relevant data
+
+# Create the .env for docker-compose
+
+Copy the example file and generate a secret JWT token (do not share it!!!), in the terminal.
 
 ```bash
 cp .env.example .env
-# Generer un token aléatoire JWT secret
+# Generate a random JWT secret token
 printf 'JWT_SECRET=%s\n' "$(openssl rand -base64 64 | tr -d '\n')" >> .env
 ```
-Cette commande ajoute la ligne `JWT_SECRET=` ( plus clé secrête généré) à la fin du ficheir .env
+This command adds the line `JWT_SECRET=` (plus the generated secret key) to the end of the .env file
 
-Le `.env` avant:
+The `.env` before:
 ```
 DB_HOST=postgres
 DB_PORT=5432
@@ -25,9 +34,9 @@ DB_PASSWORD=dev
 JWT_EXPIRATION_MS=3600000
 
 ```
-La ligne à la fin est rajouté pour permettre à la commande au dessus de bien rajouter la ligne JWT
+The line at the end is added to allow the above command to properly append the JWT line.
 
-Le `.env` devrait ressembler à :
+The `.env` should look like:
 ```
 DB_HOST=postgres
 DB_PORT=5432
@@ -35,11 +44,18 @@ DB_NAME=devdb
 DB_USERNAME=dev
 DB_PASSWORD=dev
 JWT_EXPIRATION_MS=3600000
-JWT_SECRET=<clé-generé>
+JWT_SECRET=<generated-key>
 ```
 
+# Technical Stack
 
-# Stack technique
+**Tech Stack:**
+
+- **Backend:** Spring Boot 3.4 (Java 21) + Spring Security + JWT + MongoDB
+- **Frontend:** Angular 19+ with Server‑Side Rendering (SSR) and an Express proxy
+- **Database:** MongoDB 7.0
+- **Deployment:** Docker Compose on a Proxmox LXC container
+
 
 ## Backend
 
@@ -50,42 +66,44 @@ JWT_SECRET=<clé-generé>
 * Spring Security
 * Maven
 
+INFO : 
+
 ## Frontend
 
 * Angular
 * TypeScript
 
-Télécharger la dernière version stable de node sur : https://nodejs.org/en/download
-Choisir la version LTS (Long Term Support), la version maintenue. Suivre les etapes
+INFO : https://nodesource.com/products/distributions 
 
-## Base de données
+Download the latest stable version of Node from: https://nodejs.org/en/download
+Choose the LTS (Long Term Support) version, the maintained version. Follow the steps.
+
+## Database
 
 * PostgreSQL
 
-## Conteneurisation
+## Containerization
 
 * Docker
 * Docker Compose
 
-
-## Plugins recommandés
+## Recommended Plugins
 
 * Docker
-
 
 ---
 
 # Installation
 
-1. Cloner le dépôt.
+1. Clone the repository.
 
 ```bash
 git clone <repository-url>
 ```
 
-2. Ouvrir le projet avec vsCode ou autre IDE.
+2. Open the project with VS Code or another IDE.
 
-3. Lancer Docker. Dans un terminal lancer : 
+3. Start Docker. In a terminal run:
 ```bash
 docker compose up -d 
 ```
@@ -93,18 +111,18 @@ docker compose up -d
 docker compose build --no-cache frontend && docker compose up -d frontend
 ```
 
-4. Démarrer Docker Deskstop. Qui va lancer le frontend et le backend
+4. Start Docker Desktop. It will launch the frontend and backend.
 
 ```bash
 docker compose up -d
 ```
 
-5. (sinon) Lancer le backend Spring Boot.
+5. (otherwise) Start the Spring Boot backend.
 ```bash
 mvn spring-boot:run
 ```
 
-6. (sinon) Lancer le frontend Angular.
+6. (otherwise) Start the Angular frontend.
 
 ```bash
 npm install
@@ -113,36 +131,36 @@ ng serve
 
 ---
 
-# Lancement
+# Running
 
-Une fois les deux applications démarrées :
+Once both applications are started:
 
-- **Frontend** on `http://localhost:4200`
-- **Backend** on `http://localhost:8080`
-- **PostgreSQL** on `localhost:5432` (database `devdb`, user `dev`, password `dev`)
+- **Frontend** at `http://localhost:4200`
+- **Backend** at `http://localhost:8080`
+- **PostgreSQL** at `localhost:5432` (database `devdb`, user `dev`, password `dev`)
 
-### Arreter le projet
+### Stopping the project
 
-En ligne de commande : 
+In the command line:
 ```bash
 docker compose down
 ```
 
-Ou dans Docker Desktop directement.
+Or directly in Docker Desktop.
 
-Supprimer tous les volumes de la base de données :
+Remove all database volumes:
 
 ```bash
 docker compose down -v
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 fullstack-template/
 ├── backend/      # Spring Boot (Maven)
 ├── frontend/     # Angular
 ├── docker-compose.yml
-├── .env.example         # Variables d'environnement
+├── .env.example         # Environment variables
 └── README.md
 ```
