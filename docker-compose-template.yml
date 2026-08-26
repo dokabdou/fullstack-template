@@ -1,0 +1,64 @@
+services:
+  {PROJECT_NAME}-frontend:
+    build:
+      context: ./{PROJECT_NAME}-frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./{PROJECT_NAME}-frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - dev-net
+
+  {PROJECT_NAME}-backend:
+    build:
+      context: ./{PROJECT_NAME}-backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./{PROJECT_NAME}-backend:/app
+      - ~/.m2:/root/.m2
+    env_file:
+      - .env
+    environment:
+        - SPRING_PROFILES_ACTIVE=dev
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME}
+        - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+        - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+        - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+        - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+    networks:
+      - dev-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18-alpine
+    ports:
+      - "5432:5432" # TODO : Remove later
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pg-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d devdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+
+volumes:
+  pg-data:

@@ -1,4 +1,4 @@
-# RUN THE auto_deploy.sh for fast deployment
+# RUN THE auto_deploy.sh for fast deployment : ex boycott list
 
 ```bash
 # give access to the auto_deploy file

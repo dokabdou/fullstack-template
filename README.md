@@ -2,7 +2,11 @@
 
 TO DO DESCRIPTION
 
-
+Rename the frontend and backend to the project name -- RENAME everything thats name "fullstack-template" :
+Search for {PROJECT_NAME}- as well
+- backend pom.xml, anywhere with 'frontend'
+- frontend angular.json, anywhere with 'frontend'
+- in the docker files front and back
 
 Generate QR CODE in linux terminal or cmdr : 
 ```

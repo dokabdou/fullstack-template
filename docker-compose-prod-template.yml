@@ -19,9 +19,9 @@ services:
       - internal-app-network
 
   backend:
-    image: fullstack-template-backend:latest
+    image: {PROJECT_NAME}-list-backend:latest
     restart: unless-stopped
-    container_name: backend_fullstack_template_list
+    container_name: backend_{PROJECT_NAME}_list
     ports:
       - "8080:8080"
     volumes:
@@ -43,9 +43,9 @@ services:
       - proxy-network
 
   frontend:
-    image: fullstack-template-frontend:latest
+    image: {PROJECT_NAME}-list-frontend:latest
     restart: unless-stopped
-    container_name: frontend_fullstack_template_list
+    container_name: frontend_{PROJECT_NAME}_list
     ports:
       - "4200:4200"
     networks:

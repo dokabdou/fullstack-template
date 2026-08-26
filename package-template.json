@@ -1,0 +1,11 @@
+{
+  "name": "{PROJECT_NAME}",
+  "scripts": {
+    "{PROJECT_NAME}-frontend": "cd {PROJECT_NAME}-frontend && ng serve",
+    "{PROJECT_NAME}-backend": "cd {PROJECT_NAME}-backend && ./mvnw spring-boot:run",
+    "start": "concurrently \"npm run {PROJECT_NAME}-backend\" \"npm run {PROJECT_NAME}-frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
