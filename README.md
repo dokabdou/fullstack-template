@@ -198,6 +198,8 @@ Add the Subdomain to Cloudflare Zero Trust:
 - Go to Cloudflare -> Zero Trust -> Networks -> Tunnels.
 - Click on existing `Proxmox-Server` tunnel and hit EDIT.
 - add route then Add published application
+
+
 - add the subdomain name : NEWAPP
 - Domain: abdoudiallo.fr
 - **Service:** `HTTP` -> `10.10.10.7:80` :: “http://10.10.10.7:80”
