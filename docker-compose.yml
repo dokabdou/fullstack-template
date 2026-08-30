@@ -1,5 +1,5 @@
 services:
-  frontend:
+  frontend-fullstack-template-angular-springboot:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -13,7 +13,7 @@ services:
     networks:
       - dev-net
 
-  backend:
+  backend-fullstack-template-angular-springboot:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
@@ -34,10 +34,10 @@ services:
     networks:
       - dev-net
     depends_on:
-      postgres:
+      postgres-fullstack-template-angular-springboot:
         condition: service_healthy
 
-  postgres:
+  postgres-fullstack-template-angular-springboot:
     image: postgres:18-alpine
     ports:
       - "5432:5432" # TODO : Remove later
