@@ -171,7 +171,7 @@ fullstack-template/
 
 ## URL SET UP WITH NGINX AND Cloudflare
 
-### Server.ts code : src/server.ts file and adding the project url to the angular.json
+### Server.ts code : src/server.ts file and adding the project url to the angular.json and other files to create for the server deployment
 
 server.ts : 
 ```
@@ -319,6 +319,19 @@ json
 }
 ```
 
+INPUT FILES
+`` 
+```
+```
+
+`` 
+```
+```
+
+
+`` 
+```
+```
 
 ### Adding a new secure reverse proxy
 On the local machine (with tailscale active) terminal :
