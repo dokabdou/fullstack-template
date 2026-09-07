@@ -34,7 +34,7 @@ cd ..
 # ------------------------------------------------------------------
 echo "Step 2/5 :: 🛠  Building backend image..."
 cd backend
-docker build -t ${PROJECT_NAME}-backend:latest .
+docker build -f Dockerfile.dev -t ${PROJECT_NAME}-backend:latest .
 docker save ${PROJECT_NAME}-backend:latest -o backend.tar
 scp backend.tar ${PROXMOX_HOST}:${REMOTE_DIR}/
 cd ..
