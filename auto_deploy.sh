@@ -4,9 +4,9 @@ set -e  # stop on any error
 # ------------------------------------------------------------------
 # CONFIGURATION
 # ------------------------------------------------------------------
-PROJECT_NAME="boycott-list"                     # <-- change this per project
+PROJECT_NAME="-------"                     # <-- change this per project
 PROXMOX_HOST="root@192.168.1.55"
-LXC_ID="113"
+LXC_ID="113" # <-- change this per project
 REMOTE_DIR="/opt/${PROJECT_NAME}"
 
 # ------------------------------------------------------------------
