@@ -1,73 +1,86 @@
 #!/bin/bash
-set -e  # stop on any error
+set -e
+
+# Copying the ssh key to Proxmox in order to more easily automate this script
+# cat ~/.ssh/id_ed25519.pub | ssh root@192.168.1.55 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && chmod 700 ~/.ssh"
 
 # ------------------------------------------------------------------
 # CONFIGURATION
 # ------------------------------------------------------------------
-PROJECT_NAME="-------"                     # <-- change this per project
+PROJECT_NAME="-------------"          # <-- change per project
 PROXMOX_HOST="root@192.168.1.55"
-LXC_ID="113" # <-- change this per project
+LXC_ID="----"                           # <-- change per project
 REMOTE_DIR="/opt/${PROJECT_NAME}"
+COMPOSE_FILE="docker-compose-dev.yml"  # <-- choose compose file here
 
 # ------------------------------------------------------------------
 # Step 0: Ensure remote directory exists on Proxmox host
 # ------------------------------------------------------------------
-echo "📁 Ensuring remote directory ${REMOTE_DIR} exists on Proxmox host..."
+echo "Step 0/5 :: 📁 Ensuring remote directory ${REMOTE_DIR} exists on Proxmox host..."
 ssh ${PROXMOX_HOST} "mkdir -p ${REMOTE_DIR}"
 
 # ------------------------------------------------------------------
 # Step 1: Build & transfer frontend image
 # ------------------------------------------------------------------
-echo "🛠  Building frontend image..."
+echo "Step 1/5 :: 🛠  Building frontend image..."
 cd frontend
-docker build -t ${PROJECT_NAME}-frontend:latest .
+docker build -f Dockerfile.dev -t ${PROJECT_NAME}-frontend:latest .
 docker save ${PROJECT_NAME}-frontend:latest -o frontend.tar
-echo "📤 Uploading frontend.tar to Proxmox host..."
 scp frontend.tar ${PROXMOX_HOST}:${REMOTE_DIR}/
 cd ..
 
 # ------------------------------------------------------------------
 # Step 2: Build & transfer backend image
 # ------------------------------------------------------------------
-echo "🛠  Building backend image..."
+echo "Step 2/5 :: 🛠  Building backend image..."
 cd backend
 docker build -t ${PROJECT_NAME}-backend:latest .
 docker save ${PROJECT_NAME}-backend:latest -o backend.tar
-echo "📤 Uploading backend.tar to Proxmox host..."
 scp backend.tar ${PROXMOX_HOST}:${REMOTE_DIR}/
 cd ..
 
 # ------------------------------------------------------------------
-# Step 3: Copy Docker Compose files
+# Step 3: Copy compose file and .env
 # ------------------------------------------------------------------
-echo "📄 Copying docker-compose files..."
-scp docker-compose-prod.yml ${PROXMOX_HOST}:${REMOTE_DIR}/
+echo "Step 3/5 :: 📄 Copying ${COMPOSE_FILE} and .env..."
+scp ${COMPOSE_FILE} .env ${PROXMOX_HOST}:${REMOTE_DIR}/
 
 # ------------------------------------------------------------------
-# Step 4: Push files from Proxmox host to LXC container
+# Step 4: Tar source directories for pushing into LXC (needed for dev volumes)
 # ------------------------------------------------------------------
-echo "🚚 Pushing files into LXC ${LXC_ID}..."
+echo "Step 4/5 :: 📦 Packaging source code..."
+tar -czf frontend_src.tar.gz frontend
+tar -czf backend_src.tar.gz backend
+scp frontend_src.tar.gz backend_src.tar.gz ${PROXMOX_HOST}:${REMOTE_DIR}/
+
+# ------------------------------------------------------------------
+# Step 5. Push files to LXC and deploy
+# ------------------------------------------------------------------
+echo "Step 5/5 :: 🚚 Pushing files into LXC ${LXC_ID}..."
 ssh ${PROXMOX_HOST} <<EOF
-  # Ensure the destination directory exists inside the LXC
+  set -e
   pct exec ${LXC_ID} -- mkdir -p ${REMOTE_DIR}
-
-  pct push ${LXC_ID} ${REMOTE_DIR}/backend.tar ${REMOTE_DIR}/backend.tar
   pct push ${LXC_ID} ${REMOTE_DIR}/frontend.tar ${REMOTE_DIR}/frontend.tar
-  pct push ${LXC_ID} ${REMOTE_DIR}/docker-compose.yml ${REMOTE_DIR}/docker-compose.yml
-  pct push ${LXC_ID} ${REMOTE_DIR}/docker-compose-prod.yml ${REMOTE_DIR}/docker-compose-prod.yml
-EOF
+  pct push ${LXC_ID} ${REMOTE_DIR}/backend.tar ${REMOTE_DIR}/backend.tar
+  pct push ${LXC_ID} ${REMOTE_DIR}/${COMPOSE_FILE} ${REMOTE_DIR}/${COMPOSE_FILE}
+  pct push ${LXC_ID} ${REMOTE_DIR}/.env ${REMOTE_DIR}/.env
+  pct push ${LXC_ID} ${REMOTE_DIR}/frontend_src.tar.gz ${REMOTE_DIR}/frontend_src.tar.gz
+  pct push ${LXC_ID} ${REMOTE_DIR}/backend_src.tar.gz ${REMOTE_DIR}/backend_src.tar.gz
 
-# ------------------------------------------------------------------
-# Step 5: Deploy inside LXC
-# ------------------------------------------------------------------
-echo "🚀 Deploying new images inside LXC ${LXC_ID}..."
-ssh ${PROXMOX_HOST} "pct exec ${LXC_ID} -- bash -c '
-  cd ${REMOTE_DIR}
-  docker-compose -f docker-compose-prod.yml down
-  docker load -i frontend.tar
-  docker-compose -f docker-compose-prod.yml up -d frontend
-  docker load -i backend.tar
-  docker-compose -f docker-compose-prod.yml up -d backend
-'"
+  pct exec ${LXC_ID} -- bash -c '
+    set -e
+    cd ${REMOTE_DIR}
+    tar -xzf frontend_src.tar.gz
+    tar -xzf backend_src.tar.gz
+
+    # Ensure external network exists (create if missing)
+    docker network inspect proxy-network >/dev/null 2>&1 || docker network create proxy-network
+
+    docker compose -f ${COMPOSE_FILE} down || true
+    docker load -i frontend.tar
+    docker load -i backend.tar
+    docker compose -f ${COMPOSE_FILE} up -d
+  '
+EOF
 
 echo "✅ Redeployment complete!"
