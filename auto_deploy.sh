@@ -11,21 +11,21 @@ PROJECT_NAME="-------------"          # <-- change per project
 PROXMOX_HOST="root@192.168.1.55"
 LXC_ID="----"                           # <-- change per project
 REMOTE_DIR="/opt/${PROJECT_NAME}"
-COMPOSE_FILE="docker-compose-dev.yml"  # <-- choose compose file here : docker-compose-prod.yml
+COMPOSE_FILE="docker-compose-dev.yml"  # <-- choose compose file here : docker-compose-prod.yml | docker-compose-pre-prod.yml
 
 # ------------------------------------------------------------------
 # Step 0: Ensure remote directory exists on Proxmox host
 # ------------------------------------------------------------------
-echo "Step 0/5 :: 📁 Ensuring remote directory ${REMOTE_DIR} exists on Proxmox host..."
+echo "Step 0/4 :: 📁 Ensuring remote directory ${REMOTE_DIR} exists on Proxmox host..."
 ssh ${PROXMOX_HOST} "mkdir -p ${REMOTE_DIR}"
 
 # ------------------------------------------------------------------
 # Step 1: Build & transfer frontend image
 # ------------------------------------------------------------------
-echo "Step 1/5 :: 🛠  Building frontend image..."
+echo "Step 1/4 :: 🛠  Building frontend image..."
 cd frontend
-#docker build -f Dockerfile.dev -t ${PROJECT_NAME}-frontend:latest . #(dev)
-docker build -t ${PROJECT_NAME}-frontend:latest .   # uses default Dockerfile (prod)
+#docker build --no-cache -f Dockerfile.dev -t ${PROJECT_NAME}-frontend:latest . #(dev)
+docker build --no-cache -t ${PROJECT_NAME}-frontend:latest .   # uses default Dockerfile (prod)
 docker save ${PROJECT_NAME}-frontend:latest -o frontend.tar
 scp frontend.tar ${PROXMOX_HOST}:${REMOTE_DIR}/
 cd ..
@@ -33,8 +33,8 @@ cd ..
 # ------------------------------------------------------------------
 # Step 2: Build & transfer backend image
 # ------------------------------------------------------------------
-echo "Step 2/5 :: 🛠  Building backend image..."
-cd backend
+echo "Step 2/4 :: 🛠  Building backend image..."
+cd ugop-formation-backend
 #docker build -f Dockerfile.dev -t ${PROJECT_NAME}-backend:latest . # (dev)
 docker build -t ${PROJECT_NAME}-backend:latest .    # uses default Dockerfile (prod)
 docker save ${PROJECT_NAME}-backend:latest -o backend.tar
@@ -51,7 +51,7 @@ scp ${COMPOSE_FILE} .env ${PROXMOX_HOST}:${REMOTE_DIR}/
 # ------------------------------------------------------------------
 # Step 4. Push files to LXC and deploy
 # ------------------------------------------------------------------
-echo "Step 5/5 :: 🚚 Pushing files into LXC ${LXC_ID}..."
+echo "Step 4/4 :: 🚚 Pushing files into LXC ${LXC_ID}..."
 ssh ${PROXMOX_HOST} <<EOF
   set -e
   pct exec ${LXC_ID} -- mkdir -p ${REMOTE_DIR}
