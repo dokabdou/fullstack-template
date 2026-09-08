@@ -171,11 +171,10 @@ fullstack-template/
 
 ## URL SET UP WITH NGINX AND Cloudflare
 
-### Server.ts code : src/server.ts file and adding the project url to the angular.json and other files to create for the server deployment
+### Example UGOP BELOW => Server.ts code : src/server.ts file and adding the project url to the angular.json and other files to create for the server deployment
 
 server.ts : 
 ```
-typescript
 import {
 	AngularNodeAppEngine,
 	createNodeRequestHandler,
@@ -191,11 +190,7 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine({
-	allowedHosts: [
-		'ugop-formation.abdoudiallo.fr', // the deployed domain
-		'localhost',
-		'127.0.0.1',
-	],
+	allowedHosts: ['ugop-formation.abdoudiallo.fr', 'localhost', '127.0.0.1'],
 	trustProxyHeaders: true,
 });
 
@@ -215,6 +210,7 @@ app.use(
 		target: 'http://backend:8080',
 		changeOrigin: true,
 		pathFilter: '/api',
+		pathRewrite: { '^/api': '' },
 		proxyTimeout: 30000, // wait up to 30 seconds for the backend
 		timeout: 30000, // socket timeout
 	}),
@@ -275,17 +271,79 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
  */
 export const reqHandler = createNodeRequestHandler(app);
-
 ```
 
 to add in the `frontend\angular.json` under  `"serve": ` 
 ```
-json
-"serve": {
+{
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"cli": {
+		"packageManager": "npm",
+		"analytics": false
+	},
+	"newProjectRoot": "projects",
+	"projects": {
+		"frontend": {
+			"projectType": "application",
+			"schematics": {
+				"@schematics/angular:component": {
+					"style": "scss"
+				}
+			},
+			"root": "",
+			"sourceRoot": "src",
+			"prefix": "app",
+			"architect": {
+				"build": {
+					"builder": "@angular/build:application",
+					"options": {
+						"browser": "src/main.ts",
+						"tsConfig": "tsconfig.app.json",
+						"inlineStyleLanguage": "scss",
+						"assets": [
+							{
+								"glob": "**/*",
+								"input": "public"
+							},
+							"src/assets"
+						],
+						"styles": ["src/custom-theme.scss", "src/styles.scss"],
+						"server": "src/main.server.ts",
+						"outputMode": "server",
+						"ssr": {
+							"entry": "src/server.ts"
+						}
+					},
+					"configurations": {
+						"production": {
+							"budgets": [
+								{
+									"type": "initial",
+									"maximumWarning": "2MB",
+									"maximumError": "1MB"
+								},
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "10kB",
+									"maximumError": "15kB"
+								}
+							],
+							"outputHashing": "all"
+						},
+						"development": {
+							"optimization": false,
+							"extractLicenses": false,
+							"sourceMap": true
+						}
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
 					"builder": "@angular/build:dev-server",
 					"options": {
 						"proxyConfig": "proxy.conf.json",
-						"allowedHosts": ["NEWAPP.abdoudiallo.fr"],
+						"allowedHosts": ["ugop-formation.abdoudiallo.fr"],
 						"port": 4200
 					},
 					"configurations": {
@@ -298,15 +356,22 @@ json
 					},
 					"defaultConfiguration": "development"
 				},
+				"test": {
+					"builder": "@angular/build:unit-test"
+				}
+			}
+		}
+	}
+}
 ```
 
 Also make sure there is a `frontend\proxy.conf.json` file in the frontend, otherwise the frontend cant connect to the backend, without it there is a 502 error will pop up: 
 ```
-json
 {
 	"/api": {
 		"target": "http://backend:8080",
-		"secure": false
+		"secure": false,
+		"changeOrigin": true
 	},
 	"/swagger-ui": {
 		"target": "http://backend:8080",
@@ -317,17 +382,155 @@ json
 		"secure": false
 	}
 }
+
 ```
 
 INPUT FILES
+`main.server.ts` 
+```
+import { BootstrapContext, bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { config } from './app/app.config.server';
+
+const bootstrap = (context: BootstrapContext) =>
+	bootstrapApplication(App, config, context);
+
+export default bootstrap;
+
+```
+
+`app.config.server.ts` 
+```
+import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
+import { provideServerRendering, withRoutes } from '@angular/ssr';
+import { appConfig } from './app.config';
+import { serverRoutes } from './app.routes.server';
+
+const serverConfig: ApplicationConfig = {
+	providers: [provideServerRendering(withRoutes(serverRoutes))],
+};
+
+export const config = mergeApplicationConfig(appConfig, serverConfig);
+
+```
+
+
+`app.routes.server.ts` 
+```
+import { RenderMode, ServerRoute } from '@angular/ssr';
+
+export const serverRoutes: ServerRoute[] = [
+	{ path: '', renderMode: RenderMode.Server },
+	{ path: 'kanban', renderMode: RenderMode.Server },
+	{ path: 'archives', renderMode: RenderMode.Server },
+	{ path: 'settings', renderMode: RenderMode.Server },
+	{ path: 'login', renderMode: RenderMode.Server },
+	{ path: 'register', renderMode: RenderMode.Server },
+	{ path: '**', renderMode: RenderMode.Server },
+];
+
+```
+
+`SecurityConfig.java` 
+```
+package com.ugop.ugop_formation_backend.config;
+
+import com.ugop.ugop_formation_backend.filters.auth.JwtAuthenticationFilter;
+import com.ugop.ugop_formation_backend.security.RestAuthenticationEntryPoint;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          RestAuthenticationEntryPoint authenticationEntryPoint){
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(authenticationEntryPoint))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(
+			"http://localhost:4200", // dev 
+			"http://ugop-formation.abdoudiallo.fr/",
+			"https://ugop-formation.abdoudiallo.fr"  // production
+		)); // URL des fronts (angular + ugop)
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(false); // sauf cookies
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}
+```
+
+COPY THE DOCKERFILES 
 `` 
 ```
 ```
+
 
 `` 
 ```
 ```
 
+`` 
+```
+```
 
 `` 
 ```
