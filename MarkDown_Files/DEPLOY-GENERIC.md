@@ -280,8 +280,8 @@ systemctl status ssh --no-pager
 
 ![Proxmox ssh port search](deployment-guide-images/Proxmox_ssh_port.png)
 
-*Proxmox: locating the SSH port of the host — the value that the deploy scripts need as
-`--ssh-port` / `-p`, since this infrastructure listens on 2222 rather than 22.*
+_Proxmox: locating the SSH port of the host — the value that the deploy scripts need as
+`--ssh-port` / `-p`, since this infrastructure listens on 2222 rather than 22._
 
 ![Nginx Proxy Manager: the host list, one Proxy Host per application](deployment-guide-images/NGINX_homeScreen.png)
 
@@ -729,15 +729,15 @@ echo "✅ Redeployment complete!"
 
 What is worth changing before reusing it for another stack:
 
-| Point | Reason |
-| --- | --- |
-| `scp` and `ssh` are called without a port | this infrastructure listens on **2222**, not 22, so both need `-P 2222` / `-p 2222`; Appendix A derives the port from an option |
-| `docker-compose` (v1) | the containers ship the compose **v2 plugin**: `docker compose` is what the compose files assume and what is maintained |
-| the `docker-compose.yml` line in step 4 | that file exists in few projects — only `docker-compose-prod.yml` is deployed; with `set -e`, a failed `pct push` aborts the whole run |
-| no health gate | the script ends when `up -d` returns, so a container that starts and immediately crashes is reported as success; Appendix A polls the health status and prints the logs on failure |
-| hardcoded `PROXMOX_HOST`, `LXC_ID`, `REMOTE_DIR` | turning them into options/environment variables (Appendix A) makes one script serve every application |
-| `up -d frontend` then `up -d backend` | per-service startup works, but `up -d` on the whole file also applies `depends_on` and starts the database in the right order |
-| emoji in the status lines | harmless interactively; plain ASCII is safer when output is captured by CI or a non-UTF-8 locale |
+| Point                                            | Reason                                                                                                                                                                             |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scp` and `ssh` are called without a port        | this infrastructure listens on **2222**, not 22, so both need `-P 2222` / `-p 2222`; Appendix A derives the port from an option                                                    |
+| `docker-compose` (v1)                            | the containers ship the compose **v2 plugin**: `docker compose` is what the compose files assume and what is maintained                                                            |
+| the `docker-compose.yml` line in step 4          | that file exists in few projects — only `docker-compose-prod.yml` is deployed; with `set -e`, a failed `pct push` aborts the whole run                                             |
+| no health gate                                   | the script ends when `up -d` returns, so a container that starts and immediately crashes is reported as success; Appendix A polls the health status and prints the logs on failure |
+| hardcoded `PROXMOX_HOST`, `LXC_ID`, `REMOTE_DIR` | turning them into options/environment variables (Appendix A) makes one script serve every application                                                                              |
+| `up -d frontend` then `up -d backend`            | per-service startup works, but `up -d` on the whole file also applies `depends_on` and starts the database in the right order                                                      |
+| emoji in the status lines                        | harmless interactively; plain ASCII is safer when output is captured by CI or a non-UTF-8 locale                                                                                   |
 
 > The two scripts are complementary rather than competing: Appendix A is the single-image,
 > option-driven, health-gated version used by the static application described in this
@@ -813,7 +813,7 @@ if [ -z "${SCP_BIN:-}" ]; then
 fi
 
 usage() {
-    cat <<'AIDE'
+    cat <<'HELP'
 <app> — build, transfer and deploy to the LXC
 
   sh auto_deploy.sh [options]
